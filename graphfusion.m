@@ -1,4 +1,4 @@
-function [F,S]=graphfusion(Zcomplete,HF,G,truth,beta,gamma)
+function [F,S]=graphfusion(Zcomplete,HF,G,truth,lambda,beta,gamma)
 % truth is the true class label.
 % mv=size(X,1);
 num_view=size(Zcomplete,2);
@@ -52,30 +52,19 @@ for ii=1:200
     % for S
     parfor ij=1:n % 1 - 1200
         all=distance(F,n,ij);  % n x 1  
-        Z(:,ij)=(sum(M(:,ij,:),3)   -gamma*all'/(4*beta))/    sum(wv);
+        Z(:,ij)=(sum(M(:,ij,:),3)   -beta*all'/(4*lambda))/    sum(wv);
     end
     
     % Z -> S (fusion)
     % ii greater 5 and 
     error = norm(Z-Zold,'fro')/norm(Zold,'fro');
     fprintf('Error value is %d \n',error);
-    disp('Error is:');
-    disp(error);
-    if ii>5 &( (norm(Z-Zold,'fro')/norm(Zold,'fro') )<1e-3)
+
+    if ii>5 &( (norm(Z-Zold,'fro')/norm(Zold,'fro') )<1.5e-3)
         break
     end
      
 end
-
-% res=zeros(10,3);
-% for ij=1:10
-% %actual_ids= kmeans(F, c, 'emptyaction', 'singleton', 'replicates', 1, 'display', 'off');
-% actual_ids= kmeans(F, c);
-% [res(ij,:)] = ClusteringMeasure( actual_ids,s);
-% end
-% result(1,1)=mean(res(:,1));result(1,2)=std(res(:,1));
-% result(2,1)=mean(res(:,2));result(2,2)=std(res(:,2));
-% result(3,1)=mean(res(:,3));result(3,2)=std(res(:,3));
 
 end
 

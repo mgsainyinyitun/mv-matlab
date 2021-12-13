@@ -1,4 +1,4 @@
-function [HF,WF,Z,F,S]=algorithm(X,H,Z,G,invH,num_view,truthF,gamma,max_iter)
+function [HF,WF,Z,F,S]=algorithm(X,H,Z,G,invH,num_view,truthF,lambda,beta,gamma,max_iter)
 % X = list of all view {x1,x2,x3,...}
 % W = list of all w {w1,w2,w3,...}
 % H = list of all h {h1,h2,h3,...}
@@ -56,7 +56,7 @@ end
 %     Z{iv} = G{iv}'*Z{iv}*G{iv};
 % end
 % graph fusion 
-[F,S]= graphfusion(Z,HF,G,truthF,100,0.01);
+[F,S]= graphfusion(Z,HF,G,truthF,lambda,beta,gamma);
     
 end
 

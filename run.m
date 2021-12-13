@@ -5,13 +5,17 @@ clc
 %load('./database/bbcsport4vbigRnSp.mat');
 %load('./database/100Leaves.mat');
 %load('./database/ORL.mat');
-load('./database/mfeatRnSp.mat');
-%load('./database/WebKB.mat');
-f = 1;
+%load('./database/mfeatRnSp.mat');
+load('./database/WebKB.mat');
+%load('./database/orlRnSp.mat');
+%load('./database/caltech7.mat');
+%load('./database/buaaRnSp.mat');
+%load('./database/Mfeat.mat');
+f = 8;
 X = data; % complete data
-folds = miss10;
+folds = miss20;
 ind_folds = folds{f};
-truthF = truth;  
+truthF = truth;
 numClust = length(unique(truthF));
 num_view = length(X);
 % Normalize Data
@@ -65,8 +69,11 @@ max_iter=200;
 
 % update 
 %% update NMF
-gamma = 0.001;
-[HF,WF,Z,F,S]=algorithm(X,H,Z_ini,G,invH,num_view,truthF,gamma,max_iter);
+lambda = 1000;
+beta = 0.01;
+gamma = 0.00001;
+
+[HF,WF,Z,F,S]=algorithm(X,H,Z_ini,G,invH,num_view,truthF,lambda,beta,gamma,max_iter);
 
 % complete graph
 % for iv=1:num_view
@@ -91,7 +98,7 @@ gamma = 0.001;
 % end
 % U = U/num_view;
 
-new_F = S;
+new_F = F;
 norm_mat = repmat(sqrt(sum(new_F.*new_F,2)),1,size(new_F,2));
 for i = 1:size(norm_mat,1)
     if (norm_mat(i,1)==0)
@@ -120,8 +127,6 @@ mean_ACC = mean(AC)
 mean_NMI = mean(MIhat)
 mean_PUR = mean(Purity)
 %% ----------------------
-
-
 
 
 %% cluster graph with spectral clustering
