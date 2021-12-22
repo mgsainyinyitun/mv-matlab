@@ -9,8 +9,8 @@ clc
 %load('./database/WebKB.mat');
 %load('./database/orlRnSp.mat');
 %load('./database/caltech7.mat');
-load('./database/buaaRnSp.mat');
-%load('./database/Mfeat.mat');
+%load('./database/buaaRnSp.mat');
+load('./database/Mfeat.mat');
 f = 8;
 X = data; % complete data
 folds = miss10;
@@ -18,22 +18,24 @@ ind_folds = folds{f};
 truthF = truth;
 numClust = length(unique(truthF));
 num_view = length(X);
+
 % Normalize Data
-% make incomplete data
+% make incomplete data by removing incomplete sample
+% fill with average value
 for iv = 1:num_view
     X1 = X{iv}';
     X1 = NormalizeFea(X1,1);
     ind_0 = find(ind_folds(:,iv) == 0);
-    X1(ind_0,:) = [];    % incomplete data  
-    Y{iv} = X1';  % incomplete data           
-    W1 = eye(size(ind_folds,1));
-    W1(ind_0,:) = [];
-    G{iv} = W1; % G1,G2,G3,G4 % four different view                                         
+    X1(ind_0,:) = missing;      % replace with NaN 
+    Y{iv} = X1';                % transfer to Y   % m x n => m = feature, n = sample   
+    avg{iv} = mean(Y{iv},2,'omitnan');
+    Y{iv} = fillmissing(Y{iv}','constant',avg{iv});
+    Y{iv} = Y{iv}';
 end
-
 clear X X1 W1
-X = Y; % incomplete
+X = Y; % complete data with average value filled
 clear Y 
+
 
 % initial Z
 for iv = 1:num_view
@@ -83,7 +85,7 @@ lambda = 1000;
 beta = 0.01;
 gamma = 0.00001;
 
-[HF,WF,Z,F,S]=algorithm(X,H,Z_ini,G,invH,num_view,truthF,lambda,beta,gamma,max_iter);
+[HF,WF,Z,F,S]=algorithm(X,H,Z_ini,invH,num_view,truthF,lambda,beta,gamma,max_iter);
 
 % complete graph
 % for iv=1:num_view

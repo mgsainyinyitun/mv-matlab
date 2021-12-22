@@ -1,8 +1,8 @@
-function [F,S]=graphfusion(Zcomplete,HF,G,truth,lambda,beta,gamma)
+function [F,S]=graphfusion(Zcomplete,HF,truth,lambda,beta,gamma)
 % truth is the true class label.
 % mv=size(X,1);
 num_view=size(Zcomplete,2);
-n=size( G{1}'*Zcomplete{1}*G{1} ,1);
+n=size( Zcomplete{1} ,1);
 
 Z=eye(n);
 
@@ -39,7 +39,7 @@ for ii=1:200
   
         %-----------
         % Z{iv} = G{iv}'*Z{iv}*G{iv};
-        Zv(:,:,i)=G{i}'*Zcomplete{i}*G{i};
+        Zv(:,:,i)=Zcomplete{i};
         
         T=Zv(:,:,i);
         T(T<0)=0;
