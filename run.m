@@ -6,14 +6,14 @@ clc
 %load('./database/100Leaves.mat');
 %load('./database/ORL.mat');
 %load('./database/mfeatRnSp.mat');
-load('./database/WebKB.mat');
+%load('./database/WebKB.mat');
 %load('./database/orlRnSp.mat');
 %load('./database/caltech7.mat');
-%load('./database/buaaRnSp.mat');
+load('./database/buaaRnSp.mat');
 %load('./database/Mfeat.mat');
 f = 8;
 X = data; % complete data
-folds = miss20;
+folds = miss10;
 ind_folds = folds{f};
 truthF = truth;
 numClust = length(unique(truthF));
@@ -55,6 +55,16 @@ for iv = 1:num_view
     tmp(sub2ind(size(tmp),[1:ni_num(iv)],Htmp'))=1;% ni*1->ni*k
     H{iv} = tmp';
 end
+
+
+% W = [];
+% % initialize W
+% for iv = 1:num_view
+%     ni_num(iv) = size(X{iv},1);% num of existing sampe
+%     tmp = rand(ni_num(iv),numClust);
+%     W{iv} = tmp;
+% end
+
 
 % compute inverse GPU vers
 for iv = 1:num_view
