@@ -42,13 +42,13 @@ for iter = 1:max_iter
     
     % --------- update Z ----------------
 
-    for iv = 1:num_view
-        dim = size(HF{iv});
-        I = eye(dim(2));
-        to_inv = HF{iv}'*HF{iv}+gamma*I;
-        invV = inv(to_inv);
-        Z{iv} = invV*(HF{iv}'*HF{iv});
-    end
+%     for iv = 1:num_view
+%         dim = size(HF{iv});
+%         I = eye(dim(2));
+%         to_inv = HF{iv}'*HF{iv}+gamma*I;
+%         invV = inv(to_inv);
+%         Z{iv} = invV*(HF{iv}'*HF{iv});
+%     end
     
 %     for iv = 1:num_view
 %         e = getError(X{iv},WF{iv},HF{iv});
@@ -64,7 +64,32 @@ end
 %     Z{iv} = G{iv}'*Z{iv}*G{iv};
 % end
 % graph fusion 
-[F,S]= graphfusion(Z,HF,G,truthF,lambda,beta,gamma);
+% [F,S]= graphfusion(Z,HF,G,truthF,lambda,beta,gamma);
+
+% GMIC graph fusion
+
+
+% complete H
+ for iv = 1:num_view
+     HF{iv} = HF{iv}*G{iv};
+ end
+
+
+% F= 0;
+
+c = length(unique(truthF));
+[y, U, S0, S0_initial, F, evs] = gmc_fusion(HF, c); % c: the # of clusters
+S = U;
+
+
+metric = CalcMeasures(y0, y);
+ACC(rtimes) = metric(1);
+NMI(rtimes) = metric(2);
+ARI(rtimes) = metric(3);
+error_cnt(rtimes) = metric(4);
+disp(char(dataname(idata)));
+fprintf('=====In iteration %d=====\nACC:%.4f\tNMI:%.4f\tARI:%.4f\terror_cnt:%d\n',rtimes,metric(1),metric(2),metric(3),metric(4));
+
     
 end
 

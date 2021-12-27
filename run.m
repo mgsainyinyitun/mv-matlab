@@ -2,15 +2,16 @@
 clear
 clc
 
-%load('./database/bbcsport4vbigRnSp.mat');
+load('./database/bbcsport4vbigRnSp.mat');
 %load('./database/100Leaves.mat');
 %load('./database/ORL.mat');
 %load('./database/mfeatRnSp.mat');
 %load('./database/WebKB.mat');
 %load('./database/orlRnSp.mat');
 %load('./database/caltech7.mat');
-load('./database/buaaRnSp.mat');
+%load('./database/buaaRnSp.mat');
 %load('./database/Mfeat.mat');
+%load('./database/3sources.mat');
 f = 8;
 X = data; % complete data
 folds = miss10;
@@ -24,11 +25,11 @@ for iv = 1:num_view
     X1 = X{iv}';
     X1 = NormalizeFea(X1,1);
     ind_0 = find(ind_folds(:,iv) == 0);
-    X1(ind_0,:) = [];    % incomplete data  
-    Y{iv} = X1';  % incomplete data           
+    X1(ind_0,:) = [];         % incomplete data  
+    Y{iv} = X1';              % incomplete data           
     W1 = eye(size(ind_folds,1));
     W1(ind_0,:) = [];
-    G{iv} = W1; % G1,G2,G3,G4 % four different view                                         
+    G{iv} = W1; % G1,G2,G3,G4 % four different view % ni x n                                        
 end
 
 clear X X1 W1

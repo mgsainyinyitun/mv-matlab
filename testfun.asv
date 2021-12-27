@@ -57,16 +57,16 @@ y0 = truthF;
 
 
 
-[y, U, Z0, Z0_initial, F, evs] = gmc_fusion(Y, c,G); % c: the # of clusters
+[y, U, Z0, Z0_initial, F, evs] = gmc_fusion(X, c,H); % c: the # of clusters
 S = U;
 
 
-% metric = CalcMeasures(y0, y);
-% ACC = metric(1);
-% NMI = metric(2);
-% ARI = metric(3);
-% error_cnt = metric(4);
-% fprintf('=====In iteration =====\nACC:%.4f\tNMI:%.4f\tARI:%.4f\terror_cnt:%d\n',metric(1),metric(2),metric(3),metric(4));
+metric = CalcMeasures(y0, y);
+ACC = metric(1);
+NMI = metric(2);
+ARI = metric(3);
+error_cnt = metric(4);
+fprintf('=====In iteration =====\nACC:%.4f\tNMI:%.4f\tARI:%.4f\terror_cnt:%d\n',metric(1),metric(2),metric(3),metric(4));
 
 
 disp('kmean clustering');
