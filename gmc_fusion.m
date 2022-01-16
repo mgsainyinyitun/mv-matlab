@@ -1,6 +1,5 @@
 
-
-function [y, U, Z0, Z0_initial, F, evs] = gmc_fusion(X, c,G, lambda, normData)
+function [y, U, Z0, Z0_initial, F, evs] = gmc_fusion(X, c,G, lambda, normData) % gamma
 
 %% input:
 % X{}: multi-view dataset, each cell is a view, each column is a data point
@@ -53,6 +52,7 @@ for i = 1:m
     U = U + G{i}'*Z0{i}*G{i};      % FIX % change Z0 to nxn by ( GT *  Z * G )
 end
 U = U/m;
+
 for j = 1:numC % FIX
     U(j,:) = U(j,:)/sum(U(j,:));
 end
@@ -86,7 +86,7 @@ for iter = 1:NITER
     fprintf('Loop:%d \n',iter);
     
     % update Z^v
-    for v = 1:m
+    parfor v = 1:m
         Z0{v} = zeros(num);
         for i = 1:num
             % TEMP For U
@@ -154,7 +154,7 @@ for iter = 1:NITER
     
     
     % update w
-    for v = 1:m
+    parfor v = 1:m
         US = U - G{v}'*Z0{v}*G{v}; % FIX % % change Z0 to nxn by ( GT *  Z * G )
         distUS = norm(US, 'fro')^2;
         if distUS == 0
@@ -211,10 +211,13 @@ for iter = 1:NITER
     % update lambda and the stopping criterion
     fn1 = sum(ev(1:c));
     fn2 = sum(ev(1:c+1));
+    fprintf('fn1=%d \n fn2=%d',fn1,fn2);
     if fn1 > zr
-        lambda = 2*lambda;
+        %lambda = 2*lambda;
+        lambda = 1.5*lambda;
     elseif fn2 < zr
-        lambda = lambda/2;
+        %lambda = lambda/2;
+        lambda = lambda/1.5;
         F = F_old;
     else
         disp(['iter = ',num2str(iter),' lambda:',num2str(lambda)]);

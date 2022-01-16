@@ -2,9 +2,9 @@
 clear
 clc
 
-%load('./database/bbcsport4vbigRnSp.mat');
+load('./database/bbcsport4vbigRnSp.mat');
 %load('./database/100Leaves.mat');
-load('./database/ORL.mat');
+%load('./database/ORL.mat');
 %load('./database/mfeatRnSp.mat');
 %load('./database/WebKB.mat');
 %load('./database/orlRnSp.mat');
@@ -12,7 +12,7 @@ load('./database/ORL.mat');
 %load('./database/buaaRnSp.mat');
 %load('./database/Mfeat.mat');
 %load('./database/3sources.mat');
-f = 8;
+f = 1;
 X = data; % complete data
 folds = miss10;
 ind_folds = folds{f};
