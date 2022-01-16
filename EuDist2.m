@@ -38,7 +38,7 @@ if (~exist('fea_b','var')) || isempty(fea_b)
     D = bsxfun(@plus,aa,aa') - 2*ab;
     D(D<0) = 0;
     if bSqrt
-        D = sqrt(D); % 
+        D = sqrt(D);
     end
     D = max(D,D');
 else
@@ -57,3 +57,4 @@ else
         D = sqrt(D);
     end
 end
+

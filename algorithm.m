@@ -16,11 +16,19 @@ for iter = 1:max_iter
         Wtmp= Xtmp * Htmp'*invtmp;
         Wtmp   = gather(Wtmp);
         WF{iv}  = Wtmp;
+           %coeW = getCoeW(X{iv},H{iv},W{iv});
+           %W{iv} = W{iv}.*coeW;
     end
+    
+
+    
     % ---------- Update H ----------%
     for iv = 1:num_view
         coeH = getCoeH(X{iv},WF{iv},H{iv},Z{iv});
+        % coeH1 = getCoeH1(X{iv},WF{iv},H{iv},Z{iv});
+        
         H{iv} = H{iv}.*coeH;
+        
         % ---------- get inv of H again ---------
         Htemp = H{iv};
         Htemp = gpuArray(Htemp);
@@ -34,13 +42,13 @@ for iter = 1:max_iter
     
     % --------- update Z ----------------
 
-    for iv = 1:num_view
-        dim = size(HF{iv});
-        I = eye(dim(2));
-        to_inv = HF{iv}'*HF{iv}+gamma*I;
-        invV = inv(to_inv);
-        Z{iv} = invV*(HF{iv}'*HF{iv});
-    end
+%     for iv = 1:num_view
+%         dim = size(HF{iv});
+%         I = eye(dim(2));
+%         to_inv = HF{iv}'*HF{iv}+gamma*I;
+%         invV = inv(to_inv);
+%         Z{iv} = invV*(HF{iv}'*HF{iv});
+%     end
     
 %     for iv = 1:num_view
 %         e = getError(X{iv},WF{iv},HF{iv});
@@ -56,10 +64,34 @@ end
 %     Z{iv} = G{iv}'*Z{iv}*G{iv};
 % end
 % graph fusion 
-[F,S]= graphfusion(Z,HF,G,truthF,lambda,beta,gamma);
+% [F,S]= graphfusion(Z,HF,G,truthF,lambda,beta,gamma);
+
+% GMIC graph fusion
+
+
+% complete H
+ for iv = 1:num_view
+     HF{iv} = HF{iv}*G{iv};
+ end
+
+
+% F= 0;
+
+c = length(unique(truthF));
+[y, U, S0, S0_initial, F, evs] = gmc_fusion(HF, c); % c: the # of clusters
+S = U;
+
+
+metric = CalcMeasures(y0, y);
+ACC(rtimes) = metric(1);
+NMI(rtimes) = metric(2);
+ARI(rtimes) = metric(3);
+error_cnt(rtimes) = metric(4);
+disp(char(dataname(idata)));
+fprintf('=====In iteration %d=====\nACC:%.4f\tNMI:%.4f\tARI:%.4f\terror_cnt:%d\n',rtimes,metric(1),metric(2),metric(3),metric(4));
+
     
 end
-
 
 
 
@@ -78,6 +110,25 @@ denominator = (W'*W*H)+H+((H*Z)*Z');
 coeH = numerator./denominator;
 end
 
+function coeH1 = getCoeH1(X,W,H,Z)
+dim = size(Z);
+I = eye(dim(2));
+V = I - Z - Z' + Z*Z'; % 93 x 93 
+numerator = W'*X;    %    fx93 ****  f x 93
+denominator  = W'*W*H + H*V; 
+coeH1 = sqrt(numerator./denominator);
+
+
+end
+
+
+function coeW = getCoeW(X,H,W)
+    numerator = X*H';
+    denominator = (W*H)*H'; % m x c (x) (mxn) (x) 
+    coeW = sqrt(numerator./denominator);
+end
+
+
 function coeZ = getCoeZ(H,Z)
 %      numerator = np.dot(H.T,H);
 %      denominator = np.dot( np.dot(H.T,H),Z) ;
@@ -86,7 +137,6 @@ numerator = H'*H;
 denominator = H'*H*Z;
 coeZ = numerator./denominator;
 end
-
 
 
 function e = getError(X,W,H)
