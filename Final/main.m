@@ -2,7 +2,7 @@
 clear
 clc
 % Load Data
-load('./database/bbcsport4vbigRnSp.mat');
+%load('./database/bbcsport4vbigRnSp.mat');
 %load('./database/100Leaves.mat');
 %load('./database/ORL.mat');
 %load('./database/mfeatRnSp.mat');
@@ -12,9 +12,12 @@ load('./database/bbcsport4vbigRnSp.mat');
 %load('./database/buaaRnSp.mat');
 %load('./database/Mfeat.mat');
 %load('./database/3sources.mat');
+
+load('./databaseallmissing/bbcsport4vbigRnSp.mat');
+
 f = 1;
 X = data; % complete data
-folds = miss10;
+folds = miss60;
 ind_folds = folds{f};
 truthF = truth;
 numClust = length(unique(truthF));
@@ -34,8 +37,9 @@ end
 c = length(unique(truthF));
 y0 = truthF;
 
-
-[U,F] = gmc_fusion(Y, c,G); % c: the # of clusters
+tic
+[U,F,obj_value] = gmc_fusion(Y, c,G); % c: the # of clusters
+toc
 S = U;
 
 
@@ -62,4 +66,5 @@ mean_ACC = mean(AC)
 mean_NMI = mean(MIhat)
 mean_PUR = mean(Purity)
 %% ----------------------
+obj_value = obj_value';
 
