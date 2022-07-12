@@ -1,5 +1,5 @@
 
-function [U, F , obj_value] = gmc_fusion(X, c,G, lambda, normData) 
+function [U, F ,Z0,Z0_initial, obj_value] = gmc_fusion2(X, c,G, lambda, normData) 
 
 %% input:
 % X{}: multi-view dataset, each cell is a view, each column is a data point (removed with various size)
@@ -28,19 +28,7 @@ end;
 num = size(X{1},2);         % number of incomplete instances
 numC = size(G{1},2);        % number of complete instances
 m = length(X);              % number of views
-%% Normalization: Z-score
-if normData == 1
-    for i = 1:m
-        for  j = 1:num
-            normItem = std(X{i}(:,j));
-            if (0 == normItem)
-                normItem = eps;
-            end
-            X{i}(:,j) = (X{i}(:,j)-mean(X{i}(:,j)))/(normItem);
-        end
-    end
-    
-end  
+
 %% initialize Z0: Constructing the SIG matrices
 Z0 = cell(1,m);
 for i = 1:m
