@@ -1,0 +1,19 @@
+load('./database/bbcsport4vbigRnSp.mat');
+
+num 
+
+for  j = 1:num
+  normItem = std(X{i}(:,j));
+  if (0 == normItem)
+       normItem = eps;
+  end
+  X{i}(:,j) = (X{i}(:,j)-mean(X{i}(:,j)))/(normItem);
+end
+
+
+
+Y = tsne(data{1}','Algorithm','barneshut','NumPCAComponents',50);
+figure
+numGroups = length(unique(truth));
+clr = hsv(numGroups);
+gscatter(Y(:,1),Y(:,2),truth,clr)
