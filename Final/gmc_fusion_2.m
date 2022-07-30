@@ -1,5 +1,5 @@
 
-function [U, F , obj_value] = gmc_fusion(X, c,G, lambda, normData) 
+function [U, F , obj_value,alpha] = gmc_fusion_2(X, c,G, lambda, normData) 
 
 %% input:
 % X{}: multi-view dataset, each cell is a view, each column is a data point (removed with various size)
@@ -9,13 +9,13 @@ function [U, F , obj_value] = gmc_fusion(X, c,G, lambda, normData)
 %% output:
 % U: the learned unified matrix
 % F: the embedding representation
-% final objective function value 
-
+% final objective function value
 
 NITER = 20;               % Maximun number of Iteration
 zr = 10e-11;              % error
 pn = 30;                  % number of neighbours for constructS_PNG
 islocal = 1;              % only update the similarities of neighbors if islocal=1
+r = 5;                       % r is the power of alpha_i
 
 
 if nargin < 4
@@ -39,7 +39,6 @@ if normData == 1
             X{i}(:,j) = (X{i}(:,j)-mean(X{i}(:,j)))/(normItem);
         end
     end
-    
 end  
 %% initialize Z0: Constructing the SIG matrices
 Z0 = cell(1,m);
@@ -52,7 +51,7 @@ Z0_initial = Z0;   % Z0{1}, Z0{2}, ....
 %  Fusion Graph
 U = zeros(numC);                      % FIX % change matrix size to ni x ni => n x n
 for i = 1:m
-    U = U + G{i}'*Z0{i}*G{i};         % FIX % change Z0 to nxn by ( GT *  Z * G )
+    U =  U + G{i}'*Z0{i}*G{i};         % FIX % change Z0 to nxn by ( GT *  Z * G )
 end
 U = U/m; % not contain NaN
 
@@ -75,6 +74,7 @@ L = D - sU;                 % find Lap ... Matrix <for eigen value decompositon>
 [F, ~, evs]=eig1(L, c, 0);  % F =  F (eigen vector) for all view.
 
 w = ones(1,m)/m;            % initialize w to one/number of view;
+alpha = ones(1,m)/m;
 
 idxx = cell(1,m);           % ... 
 ed = cell(1,m);             % ...
@@ -92,27 +92,35 @@ for iter = 1:NITER
     
     % For objective Value
     for v = 1:m     % for all view
-        tempF(v) = w(v)*norm(U - G{v}'*Z0{v}*G{v}, 'fro')^2;
+         % tempF(v) =  w(v)*norm(U - G{v}'*Z0{v}*G{v}, 'fro')^2;
+         tempF(v) = (w(v)*norm(2*U*alpha(v) - G{v}'*Z0{v}*G{v}, 'fro')^2);
     end
-    fLf = F'*L*F;
+    fLf =  F'*L*F;
     obj_value(iter) = sum(tempF) + lambda*trace(fLf);
+    
+    h = zeros(m,1);
+    for view = 1:m
+        h(view) = sum(tempF) + lambda*trace(fLf);
+    end
+    H = bsxfun(@power,h, 1/(1-r));     % h = h.^(1/(1-r));
+    alpha = bsxfun(@rdivide,H,sum(H)); % alpha = H./sum(H);
     % end of for objective value
     
     % update Z^v
-        parfor v = 1:m
-            Z0{v} = zeros(num);
-            for i = 1:num
-                % TEMP For U
-                U_star = G{v}*U*G{v}';  % nxn -> nixni
-                
-                id = idxx{v}(i,2:pn+2);
-                di = ed{v}(i, id);
-                numerator = di(pn+1)-di+2*w(v)*U_star(i,id(:))-2*w(v)*U_star(i,id(pn+1)); % FIX % U => G * U * GT
-                denominator1 = pn*di(pn+1)-sum(di(1:pn));
-                denominator2 = 2*w(v)*sum(U_star(i,id(1:pn)))-2*pn*w(v)*U_star(i,id(pn+1)); % FIX % U => G * U * GT
-                Z0{v}(i,id) = max(numerator/(denominator1+denominator2+eps),0);
-            end
-        end
+%         parfor v = 1:m
+%             Z0{v} = zeros(num);
+%             for i = 1:num
+%                 % TEMP For U
+%                 U_star = G{v}*U*G{v}';  % nxn -> nixni
+%                 
+%                 id = idxx{v}(i,2:pn+2);
+%                 di = ed{v}(i, id);
+%                 numerator = di(pn+1)-di+2*w(v)*U_star(i,id(:))-2*w(v)*U_star(i,id(pn+1)); % FIX % U => G * U * GT
+%                 denominator1 = pn*di(pn+1)-sum(di(1:pn));
+%                 denominator2 = 2*w(v)*sum(U_star(i,id(1:pn)))-2*pn*w(v)*U_star(i,id(pn+1)); % FIX % U => G * U * GT
+%                 Z0{v}(i,id) = max(numerator/(denominator1+denominator2+eps),0);
+%             end
+%         end 
     
     % for update w,
     parfor v = 1:m                 % for all view
